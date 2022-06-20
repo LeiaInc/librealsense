@@ -2,6 +2,29 @@
 cmake_minimum_required(VERSION 3.1.0)
 project(librealsense2 LANGUAGES CXX C)
 
+if(POLICY CMP0077)
+    cmake_policy(SET CMP0077 NEW) # option() honors variables already set
+endif()
+
+if(NOT DISABLE_LEIA_CONFIGURATION)
+    # Critical
+
+    # we use on GLOBAL_TIME, so make sure it's available
+    set(ENFORCE_METADATA ON)
+
+    set(BUILD_SHARED_LIBS ON)
+
+    # Unneeded stuff
+
+    set(BUILD_GLSL_EXTENSIONS OFF)
+    set(BUILD_WITH_TM2 OFF)
+    set(BUILD_EXAMPLES OFF)
+    set(BUILD_GRAPHICAL_EXAMPLES OFF)
+    set(BUILD_TOOLS OFF)
+    set(IMPORT_DEPTH_CAM_FW OFF)
+    set(CHECK_FOR_UPDATES OFF)
+endif()
+
 include(CMake/lrs_options.cmake)
 include(CMake/connectivity_check.cmake)
 #Deprecation message, should be removed in future releases
@@ -69,7 +92,13 @@ os_target_config()
 # macro definition located at "CMake/global_config.cmake"
 global_target_config()
 
-include(CMake/install_config.cmake)
+option(REALSENSE_INSTALL_CMAKE_CONFIG "Whether to install cmake config or not" ON)
+if(REALSENSE_INSTALL_CMAKE_CONFIG)
+    include(CMake/install_config.cmake)
+else()
+    install(TARGETS ${LRS_TARGET}
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/librealsense2")
+endif()
 
 add_subdirectory(wrappers)
 if ( ( BUILD_EXAMPLES OR BUILD_PC_STITCHING ) AND BUILD_GLSL_EXTENSIONS )
